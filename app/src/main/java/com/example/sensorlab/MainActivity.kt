@@ -48,7 +48,8 @@ class MainActivity : Activity(), SensorEventListener {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             setPadding(36, 36, 36, 36)
-            setBackgroundColor(Color.rgb(20, 25, 35))
+            //setBackgroundColor(Color.rgb(20, 25, 35))
+            setBackgroundColor(backgroundColor)
         }
         fun addLine(size: Float, color: Int): TextView {
             return TextView(this).apply {
