@@ -62,7 +62,29 @@ class MainActivity : Activity(), SensorEventListener {
             }
         }
         addLine(26f, Color.WHITE).text = "Android Sensor Lab V2"
-        valuesText = addLine(19f, Color.CYAN)
+        
+        //valuesText = addLine(19f, Color.CYAN)
+        val accelerometerCard = createCard()
+
+        val accelerometerTitle = TextView(this).apply {
+            text = "ACELERÓMETRO · m/s²"
+            textSize = 14f
+            setTextColor(secondaryTextColor)
+            gravity = Gravity.CENTER
+        }
+        
+        accelerometerCard.addView(accelerometerTitle)
+        
+        valuesText = TextView(this).apply {
+            textSize = 19f
+            setTextColor(accentColor)
+            gravity = Gravity.CENTER
+            setPadding(0, 16, 0, 0)
+        }
+        
+        accelerometerCard.addView(valuesText)
+        layout.addView(accelerometerCard)        
+        
         orientationText = addLine(20f, Color.WHITE)
         anglesText = addLine(18f, Color.LTGRAY)
         commandText = addLine(23f, Color.CYAN)
