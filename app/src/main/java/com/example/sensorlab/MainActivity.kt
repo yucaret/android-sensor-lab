@@ -3,6 +3,7 @@ package com.example.sensorlab
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -68,6 +69,21 @@ class MainActivity : Activity(), SensorEventListener {
         statusText = addLine(15f, Color.WHITE)
         statusText.text = "Inclina o sacude el celular"
         setContentView(layout)
+    }
+
+    private fun createCard(): LinearLayout {
+    val card = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        gravity = Gravity.CENTER
+        setPadding(24, 24, 24, 24)
+
+        background = GradientDrawable().apply {
+            setColor(cardColor)
+            cornerRadius = 16f * resources.displayMetrics.density
+            }
+        }
+
+        return card
     }
 
     override fun onResume() {
