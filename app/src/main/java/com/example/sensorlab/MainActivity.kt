@@ -15,6 +15,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.view.Gravity
+import android.widget.ScrollView
 import android.widget.LinearLayout
 import android.widget.TextView
 import java.util.Locale
@@ -31,13 +32,15 @@ class MainActivity : Activity(), SensorEventListener {
     private val accentColor = Color.rgb(100, 225, 235)
     
     private lateinit var sensorManager: SensorManager
-    //private lateinit var valuesText: TextView
     private lateinit var xText: TextView
     private lateinit var yText: TextView
     private lateinit var zText: TextView
     
     private lateinit var orientationText: TextView
-    private lateinit var anglesText: TextView
+    private lateinit var pitchText: TextView
+    private lateinit var rollText: TextView
+    private lateinit var sensorStatus: TextView
+    private lateinit var commandHint: TextView
     private lateinit var commandText: TextView
     private lateinit var statusText: TextView
     private val gravity = FloatArray(3)
@@ -46,174 +49,102 @@ class MainActivity : Activity(), SensorEventListener {
     private var lastShake = 0L
     private var shakeUntil = 0L
 
+    private fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
+
+    private fun label(t: String, size: Float, color: Int): TextView =
+        TextView(this).apply {
+            text = t
+            textSize = size
+            setTextColor(color)
+            gravity = Gravity.CENTER
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        val layout = LinearLayout(this).apply {
+        val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            setPadding(36, 36, 36, 36)
-            //setBackgroundColor(Color.rgb(20, 25, 35))
+            setPadding(dp(16), dp(16), dp(16), dp(16))
             setBackgroundColor(backgroundColor)
         }
-        fun addLine(size: Float, color: Int): TextView {
-            return TextView(this).apply {
-                textSize = size
-                setTextColor(color)
-                gravity = Gravity.CENTER
-                setPadding(0, 12, 0, 12)
-                layout.addView(this)
-            }
-        }
-        addLine(26f, Color.WHITE).text = "Android Sensor Lab V2"
-        
-        //valuesText = addLine(19f, Color.CYAN)
-        val accelerometerCard = createCard()
-
-        val accelerometerTitle = TextView(this).apply {
-            text = "ACELERÓMETRO · m/s²"
-            textSize = 14f
-            setTextColor(secondaryTextColor)
-            gravity = Gravity.CENTER
-        }
-        
-        accelerometerCard.addView(accelerometerTitle)
-        
-        /////////////////////////////////////////////
-        val valuesRow = LinearLayout(this).apply {
+        val scroll = ScrollView(this).apply { addView(root) }
+        val header = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER
-            setPadding(0, 16, 0, 0)
+            gravity = Gravity.CENTER_VERTICAL
         }
-        
-        fun createAxis(label: String): TextView {
+        header.addView(label("Android Sensor Lab", 18f, primaryTextColor),
+            LinearLayout.LayoutParams(0, -2, 1f))
+        sensorStatus = label("Iniciando", 12f, Color.GREEN)
+        header.addView(sensorStatus)
+        root.addView(header)
+
+        fun addCard(card: LinearLayout) {
+            root.addView(card, LinearLayout.LayoutParams(-1, -2).apply {
+                topMargin = dp(12)
+            })
+        }
+        val accelerometer = createCard()
+        accelerometer.addView(label("ACELERÓMETRO · m/s²", 13f, secondaryTextColor))
+        val axisRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, dp(14), 0, 0)
+        }
+        fun axis(name: String): TextView {
             val column = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER
             }
-        
-            val title = TextView(this).apply {
-                text = label
-                textSize = 14f
-                setTextColor(secondaryTextColor)
-                gravity = Gravity.CENTER
-            }
-        
-            val value = TextView(this).apply {
-                text = "0.00"
-                textSize = 19f
-                setTextColor(accentColor)
-                gravity = Gravity.CENTER
-                setPadding(0, 8, 0, 0)
-            }
-        
-            column.addView(title)
+            column.addView(label(name, 14f, secondaryTextColor))
+            val value = label("0.00", 20f, accentColor)
             column.addView(value)
-        
-            valuesRow.addView(
-                column,
-                LinearLayout.LayoutParams(
-                    0,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    1f
-                )
-            )
-        
+            axisRow.addView(column, LinearLayout.LayoutParams(0, -2, 1f))
             return value
         }
-        
-        xText = createAxis("X")
-        yText = createAxis("Y")
-        zText = createAxis("Z")
-        
-        accelerometerCard.addView(valuesRow)
+        xText = axis("X")
+        yText = axis("Y")
+        zText = axis("Z")
+        accelerometer.addView(axisRow)
+        addCard(accelerometer)
 
-        /////////////////////////////////////////////
+        val position = createCard()
+        position.addView(label("POSICIÓN DEL CELULAR", 13f, secondaryTextColor))
+        position.addView(label("▯", 38f, accentColor))
+        orientationText = label("Esperando sensor", 17f, primaryTextColor)
+        position.addView(orientationText)
+        val anglesRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, dp(12), 0, 0)
+        }
+        pitchText = label("Inclinación: --", 12f, secondaryTextColor)
+        rollText = label("Lateral: --", 12f, secondaryTextColor)
+        anglesRow.addView(pitchText, LinearLayout.LayoutParams(0, -2, 1f))
+        anglesRow.addView(rollText, LinearLayout.LayoutParams(0, -2, 1f))
+        position.addView(anglesRow)
+        addCard(position)
 
-        val cardParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply {
-            topMargin = (16 * resources.displayMetrics.density).toInt()
-            bottomMargin = (8 * resources.displayMetrics.density).toInt()
-        }
-        
-        layout.addView(accelerometerCard, cardParams)
+        val control = createCard()
+        control.addView(label("CONTROL DEL ROBOT · SIMULACIÓN", 13f, secondaryTextColor))
+        control.addView(label("↑", 30f, accentColor))
+        commandText = label("STOP", 21f, accentColor)
+        control.addView(commandText)
+        commandHint = label("Esperando inclinación", 12f, secondaryTextColor)
+        control.addView(commandHint)
+        addCard(control)
 
-        // Tarjeta: Posición del celular
-        val positionCard = createCard()
-        
-        val positionTitle = TextView(this).apply {
-            text = "POSICIÓN DEL CELULAR"
-            textSize = 14f
-            setTextColor(secondaryTextColor)
-            gravity = Gravity.CENTER
-        }
-        
-        positionCard.addView(positionTitle)
-        
-        // Representación inicial del celular
-        val phoneIcon = TextView(this).apply {
-            text = "▯"
-            textSize = 38f
-            setTextColor(accentColor)
-            gravity = Gravity.CENTER
-            setPadding(0, 12, 0, 8)
-        }
-        
-        positionCard.addView(phoneIcon)
-        
-        // Orientación detectada
-        orientationText = TextView(this).apply {
-            textSize = 18f
-            setTextColor(primaryTextColor)
-            gravity = Gravity.CENTER
-        }
-        
-        positionCard.addView(orientationText)
-        
-        // Ángulos calculados
-        anglesText = TextView(this).apply {
-            textSize = 15f
-            setTextColor(secondaryTextColor)
-            gravity = Gravity.CENTER
-            setPadding(0, 12, 0, 0)
-        }
-        
-        positionCard.addView(anglesText)
-        
-        // Márgenes de la tarjeta
-        val positionParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply {
-            topMargin = (8 * resources.displayMetrics.density).toInt()
-            bottomMargin = (8 * resources.displayMetrics.density).toInt()
-        }
-        
-        layout.addView(positionCard, positionParams)
-        
-        
-        
-        commandText = addLine(23f, Color.CYAN)
-        statusText = addLine(15f, Color.WHITE)
-        statusText.text = "Inclina o sacude el celular"
-        setContentView(layout)
+        statusText = label("Sacude el celular para probar la vibración", 12f, secondaryTextColor)
+        statusText.setPadding(0, dp(18), 0, dp(12))
+        root.addView(statusText)
+        setContentView(scroll)
     }
 
-    private fun createCard(): LinearLayout {
-    val card = LinearLayout(this).apply {
+    private fun createCard(): LinearLayout = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
         gravity = Gravity.CENTER
-        setPadding(24, 24, 24, 24)
-
+        setPadding(dp(12), dp(16), dp(12), dp(16))
         background = GradientDrawable().apply {
             setColor(cardColor)
-            cornerRadius = 16f * resources.displayMetrics.density
-            }
+            cornerRadius = dp(14).toFloat()
         }
-
-        return card
     }
 
     override fun onResume() {
@@ -222,8 +153,10 @@ class MainActivity : Activity(), SensorEventListener {
         lastTimestamp = 0L
         val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         if (sensor == null) {
+            sensorStatus.text = "Sin sensor"
             statusText.text = "Acelerómetro no disponible"
         } else {
+            sensorStatus.text = "Sensores activos"
             sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI)
         }
     }
@@ -270,16 +203,16 @@ class MainActivity : Activity(), SensorEventListener {
             abs(gx) >= abs(gy) -> if (gx > 0f) "DERECHA" else "IZQUIERDA"
             else -> if (gy < 0f) "AVANZAR" else "RETROCEDER"
         }
-        
-        //valuesText.text = String.format(Locale.US, "X: %.2f   Y: %.2f   Z: %.2f m/s²", x, y, z)
         xText.text = String.format(Locale.US, "%.2f", x)
         yText.text = String.format(Locale.US, "%.2f", y)
         zText.text = String.format(Locale.US, "%.2f", z)
         
         
         orientationText.text = orientation
-        anglesText.text = String.format(Locale.US, "Inclinación: %.1f°\nRotación lateral: %.1f°", pitch, roll)
-        commandText.text = "Comando simulado: $command"
+        pitchText.text = String.format(Locale.US, "Inclinación: %.1f°", pitch)
+        rollText.text = String.format(Locale.US, "Lateral: %.1f°", roll)
+        commandText.text = command
+        commandHint.text = if (command == "STOP") "Esperando inclinación" else "Movimiento simulado"
 
         val dx = x - gx
         val dy = y - gy
