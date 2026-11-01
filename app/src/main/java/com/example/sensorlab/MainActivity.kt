@@ -140,8 +140,61 @@ class MainActivity : Activity(), SensorEventListener {
         
         layout.addView(accelerometerCard, cardParams)
 
-        orientationText = addLine(20f, Color.WHITE)
-        anglesText = addLine(18f, Color.LTGRAY)
+        // Tarjeta: Posición del celular
+        val positionCard = createCard()
+        
+        val positionTitle = TextView(this).apply {
+            text = "POSICIÓN DEL CELULAR"
+            textSize = 14f
+            setTextColor(secondaryTextColor)
+            gravity = Gravity.CENTER
+        }
+        
+        positionCard.addView(positionTitle)
+        
+        // Representación inicial del celular
+        val phoneIcon = TextView(this).apply {
+            text = "▯"
+            textSize = 38f
+            setTextColor(accentColor)
+            gravity = Gravity.CENTER
+            setPadding(0, 12, 0, 8)
+        }
+        
+        positionCard.addView(phoneIcon)
+        
+        // Orientación detectada
+        orientationText = TextView(this).apply {
+            textSize = 18f
+            setTextColor(primaryTextColor)
+            gravity = Gravity.CENTER
+        }
+        
+        positionCard.addView(orientationText)
+        
+        // Ángulos calculados
+        anglesText = TextView(this).apply {
+            textSize = 15f
+            setTextColor(secondaryTextColor)
+            gravity = Gravity.CENTER
+            setPadding(0, 12, 0, 0)
+        }
+        
+        positionCard.addView(anglesText)
+        
+        // Márgenes de la tarjeta
+        val positionParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            topMargin = (8 * resources.displayMetrics.density).toInt()
+            bottomMargin = (8 * resources.displayMetrics.density).toInt()
+        }
+        
+        layout.addView(positionCard, positionParams)
+        
+        
+        
         commandText = addLine(23f, Color.CYAN)
         statusText = addLine(15f, Color.WHITE)
         statusText.text = "Inclina o sacude el celular"
