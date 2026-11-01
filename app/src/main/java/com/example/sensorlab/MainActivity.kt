@@ -22,6 +22,13 @@ import kotlin.math.atan2
 import kotlin.math.sqrt
 
 class MainActivity : Activity(), SensorEventListener {
+    // Colores de la interfaz V3
+    private val backgroundColor = Color.rgb(15, 23, 38)
+    private val cardColor = Color.rgb(30, 43, 63)
+    private val primaryTextColor = Color.rgb(235, 241, 250)
+    private val secondaryTextColor = Color.rgb(165, 183, 205)
+    private val accentColor = Color.rgb(100, 225, 235)
+    
     private lateinit var sensorManager: SensorManager
     private lateinit var valuesText: TextView
     private lateinit var orientationText: TextView
