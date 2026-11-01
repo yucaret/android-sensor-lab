@@ -2,6 +2,8 @@ package com.example.sensorlab
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.widget.Button
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.hardware.Sensor
@@ -134,6 +136,19 @@ class MainActivity : Activity(), SensorEventListener {
         statusText = label("Sacude el celular para probar la vibración", 12f, secondaryTextColor)
         statusText.setPadding(0, dp(18), 0, dp(12))
         root.addView(statusText)
+        val cameraButton = Button(this).apply {
+            text = "VER CÁMARA"
+            setTextColor(Color.WHITE)
+            backgroundTintList = android.content.res.ColorStateList.valueOf(Color.rgb(21, 94, 117))
+            setOnClickListener { startActivity(Intent(this@MainActivity, CameraActivity::class.java)) }
+        }
+        root.addView(cameraButton, LinearLayout.LayoutParams(-1, dp(52)).apply {
+            topMargin = dp(12)
+        })
+        scroll.setBackgroundColor(backgroundColor)
+        window.decorView.setBackgroundColor(backgroundColor)
+        window.navigationBarColor = backgroundColor
+        window.statusBarColor = backgroundColor
         setContentView(scroll)
     }
 
