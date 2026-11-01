@@ -217,7 +217,13 @@ class MainActivity : Activity(), SensorEventListener {
             abs(gx) >= abs(gy) -> if (gx > 0f) "DERECHA" else "IZQUIERDA"
             else -> if (gy < 0f) "AVANZAR" else "RETROCEDER"
         }
-        valuesText.text = String.format(Locale.US, "X: %.2f   Y: %.2f   Z: %.2f m/s²", x, y, z)
+        
+        //valuesText.text = String.format(Locale.US, "X: %.2f   Y: %.2f   Z: %.2f m/s²", x, y, z)
+        xText.text = String.format(Locale.US, "%.2f", x)
+        yText.text = String.format(Locale.US, "%.2f", y)
+        zText.text = String.format(Locale.US, "%.2f", z)
+        
+        
         orientationText.text = orientation
         anglesText.text = String.format(Locale.US, "Inclinación: %.1f°\nRotación lateral: %.1f°", pitch, roll)
         commandText.text = "Comando simulado: $command"
