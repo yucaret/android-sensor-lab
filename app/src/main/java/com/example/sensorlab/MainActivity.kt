@@ -31,7 +31,11 @@ class MainActivity : Activity(), SensorEventListener {
     private val accentColor = Color.rgb(100, 225, 235)
     
     private lateinit var sensorManager: SensorManager
-    private lateinit var valuesText: TextView
+    //private lateinit var valuesText: TextView
+    private lateinit var xText: TextView
+    private lateinit var yText: TextView
+    private lateinit var zText: TextView
+    
     private lateinit var orientationText: TextView
     private lateinit var anglesText: TextView
     private lateinit var commandText: TextView
@@ -75,16 +79,56 @@ class MainActivity : Activity(), SensorEventListener {
         
         accelerometerCard.addView(accelerometerTitle)
         
-        valuesText = TextView(this).apply {
-            textSize = 19f
-            setTextColor(accentColor)
+        /////////////////////////////////////////////
+        val valuesRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
             setPadding(0, 16, 0, 0)
         }
         
-        //accelerometerCard.addView(valuesText)
-        //layout.addView(accelerometerCard)
-        accelerometerCard.addView(valuesText)
+        fun createAxis(label: String): TextView {
+            val column = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER
+            }
+        
+            val title = TextView(this).apply {
+                text = label
+                textSize = 14f
+                setTextColor(secondaryTextColor)
+                gravity = Gravity.CENTER
+            }
+        
+            val value = TextView(this).apply {
+                text = "0.00"
+                textSize = 19f
+                setTextColor(accentColor)
+                gravity = Gravity.CENTER
+                setPadding(0, 8, 0, 0)
+            }
+        
+            column.addView(title)
+            column.addView(value)
+        
+            valuesRow.addView(
+                column,
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    1f
+                )
+            )
+        
+            return value
+        }
+        
+        xText = createAxis("X")
+        yText = createAxis("Y")
+        zText = createAxis("Z")
+        
+        accelerometerCard.addView(valuesRow)
+
+        /////////////////////////////////////////////
 
         val cardParams = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
